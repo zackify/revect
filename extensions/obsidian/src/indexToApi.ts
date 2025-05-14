@@ -1,12 +1,13 @@
 import { debounce } from "obsidian";
+import type { RevectSettings } from "./SettingsTab";
 
 export type Props = {
-  apiUrl: string;
+  settings: RevectSettings;
   text: string;
   external_id: string;
 };
-export const indexToApi = async ({ apiUrl, text, external_id }: Props) => {
-  const res = await fetch(`${apiUrl}/index`, {
+export const indexToApi = async ({ settings, text, external_id }: Props) => {
+  const res = await fetch(`${settings.apiUrl}/index`, {
     method: "POST",
     body: JSON.stringify({
       text,
@@ -16,6 +17,7 @@ export const indexToApi = async ({ apiUrl, text, external_id }: Props) => {
       },
     }),
     headers: {
+      Authorization: settings.apiSecret, // Include the token in the 'Authorization' header
       "Content-Type": "application/json",
     },
   });

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { generate } from "../embed-generation/generate";
 import { indexToDb } from "../shared/indexToDb";
+import { corsHeaders as headers } from "../shared/corsHeaders";
 
 const schema = z.object({
   external_id: z.string().optional(),
@@ -8,14 +9,7 @@ const schema = z.object({
   metadata: z.record(z.any()).optional(),
 });
 
-const headers = {
-  "Access-Control-Allow-Origin": "app://obsidian.md",
-  "Access-Control-Allow-Methods": "POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
 export const indexRoute = async (request: Request) => {
-  if (request.method === "OPTIONS") return new Response(null, { headers });
-
   const body = await request.json();
   const { error, data, success } = schema.safeParse(body);
 

@@ -3,10 +3,12 @@ import RevectPlugin from "./main";
 
 export interface RevectSettings {
   apiUrl: string;
+  apiSecret: string;
 }
 
 export const DEFAULT_SETTINGS: RevectSettings = {
-  apiUrl: "default",
+  apiUrl: "",
+  apiSecret: "",
 };
 
 export class SettingsTab extends PluginSettingTab {
@@ -20,18 +22,31 @@ export class SettingsTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
 
-    containerEl.empty();
+    const span = containerEl.createSpan();
+    const span2 = containerEl.createSpan();
 
-    //@ts-ignore
-    new Setting(containerEl)
-      .setName("Setting #1")
-      .setDesc("It's a secret")
+    new Setting(span)
+      .setName("revect.io URL")
+      .setDesc("defaults to our cloud endpoint")
       .addText((text) =>
         text
           .setPlaceholder("Enter your api url")
           .setValue(this.plugin.settings.apiUrl)
           .onChange(async (value) => {
             this.plugin.settings.apiUrl = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(span2)
+      .setName("Access token")
+      .setDesc("your access token from revect.io")
+      .addText((text) =>
+        text
+          .setPlaceholder("Enter your access token")
+          .setValue(this.plugin.settings.apiSecret)
+          .onChange(async (value) => {
+            this.plugin.settings.apiSecret = value;
             await this.plugin.saveSettings();
           })
       );

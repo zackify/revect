@@ -59,8 +59,8 @@ export default class RevectPlugin extends Plugin {
 
       await debouncedIndexToApi(
         {
-          apiUrl: this.settings.apiUrl,
           text,
+          settings: this.settings,
           external_id: view.file?.path,
         },
         icon

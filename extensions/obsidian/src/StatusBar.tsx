@@ -28,8 +28,8 @@ export const StatusBar = ({
               const text = await vault.read(file);
 
               await indexToApi({
-                apiUrl: settings.apiUrl,
                 text,
+                settings,
                 external_id: file.path,
               });
             }

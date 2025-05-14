@@ -1,9 +1,13 @@
 import { serve, type BunRequest } from "bun";
 import { indexRoute } from "./routes";
 import App from "./frontend/public/app.html";
+import { corsHeaders } from "./shared/corsHeaders";
 
 const checkForApiKey =
   (fn: (request: BunRequest) => Promise<Response>) => (request: BunRequest) => {
+    if (request.method === "OPTIONS")
+      return new Response(null, { headers: corsHeaders });
+
     if (request.headers.get("Authorization") !== process.env.API_SECRET) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }

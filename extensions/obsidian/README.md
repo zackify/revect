@@ -1,15 +1,5 @@
 # obsidian
 
-To install dependencies:
+todo:
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run 
-```
-
-This project was created using `bun init` in bun v1.2.9. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- show error for invalid access token setting
