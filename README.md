@@ -16,3 +16,7 @@ docker run \
   --add-host=host.docker.internal:host-gateway \
   zachrebuild/revect.io:6
 ```
+
+# API Documentation
+
+The API documentation is available as an OpenAPI specification in the [openapi.json](./openapi.json) file at the root of this repository. It describes the available endpoints, request/response formats, and authentication requirements.
