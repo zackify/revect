@@ -1,0 +1,425 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Revect API",
+    "description": "API for Revect - Vector-based document search and indexing",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.revect.io",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/index": {
+      "post": {
+        "summary": "Index a document",
+        "description": "Indexes a document with its text, source, optional external ID and metadata. Returns embeddings for the document.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IndexRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document indexed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large - Metadata exceeds 100KB limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayloadTooLargeError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "summary": "CORS support",
+        "description": "Enable CORS by returning correct headers",
+        "responses": {
+          "200": {
+            "description": "CORS headers returned",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string",
+                  "example": "app://obsidian.md"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string",
+                  "example": "POST,OPTIONS"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string",
+                  "example": "Content-Type,Authorization"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "post": {
+        "summary": "Search documents",
+        "description": "Search for documents using semantic search with text embeddings",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "summary": "CORS support",
+        "description": "Enable CORS by returning correct headers",
+        "responses": {
+          "200": {
+            "description": "CORS headers returned",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string",
+                  "example": "app://obsidian.md"
+                }
+              },
+              "Access-Control-Allow-Methods": {
+                "schema": {
+                  "type": "string",
+                  "example": "POST,OPTIONS"
+                }
+              },
+              "Access-Control-Allow-Headers": {
+                "schema": {
+                  "type": "string",
+                  "example": "Content-Type,Authorization"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "IndexRequest": {
+        "type": "object",
+        "required": ["source", "text"],
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source of the document",
+            "example": "obsidian"
+          },
+          "external_id": {
+            "type": "string",
+            "description": "External identifier for the document",
+            "example": "my-document-001"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text content to be indexed",
+            "example": "This is some text content that will be indexed and made searchable."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata for the document",
+            "additionalProperties": true,
+            "example": {
+              "author": "John Doe",
+              "tags": ["notes", "documentation"]
+            }
+          }
+        }
+      },
+      "IndexResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Data received and validated"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "example": "obsidian"
+              },
+              "external_id": {
+                "type": "string",
+                "example": "my-document-001"
+              },
+              "text": {
+                "type": "string",
+                "example": "This is some text content that will be indexed and made searchable."
+              },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": true,
+                "example": {
+                  "author": "John Doe",
+                  "tags": ["notes", "documentation"]
+                }
+              }
+            }
+          },
+          "embeddings": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Vector embeddings for the document",
+            "example": [0.1, -0.2, 0.3, 0.4, -0.5]
+          }
+        }
+      },
+      "SearchRequest": {
+        "type": "object",
+        "required": ["text"],
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text to search for",
+            "example": "How to implement vector search?"
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Document ID",
+                  "example": "123"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Document text",
+                  "example": "Vector search implementation requires embedding generation and similarity computation."
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Document source",
+                  "example": "obsidian"
+                },
+                "metadata": {
+                  "type": "object",
+                  "description": "Document metadata",
+                  "additionalProperties": true,
+                  "example": {
+                    "author": "John Doe",
+                    "tags": ["notes", "documentation"]
+                  }
+                },
+                "similarity": {
+                  "type": "number",
+                  "description": "Similarity score",
+                  "example": 0.93
+                }
+              }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Validation failed"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "example": "invalid_type"
+                },
+                "expected": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "received": {
+                  "type": "string",
+                  "example": "undefined"
+                },
+                "path": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  },
+                  "example": ["text"]
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Text field is required"
+                }
+              }
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Unauthorized"
+          }
+        }
+      },
+      "ServerError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Failed to generate embeddings"
+          }
+        }
+      },
+      "PayloadTooLargeError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Metadata exceeds 100KB limit"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "API key for authorization. Must match the API_SECRET environment variable."
+      }
+    }
+  }
+}
