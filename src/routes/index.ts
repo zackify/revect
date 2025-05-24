@@ -1,50 +1,16 @@
-import { z } from "zod";
-import { generate } from "../embed-generation/generate";
-import { indexDocument } from "../database/indexDocument";
-import { corsHeaders as headers } from "../shared/corsHeaders";
-import { Request, Response } from "express";
+import { Router } from 'express';
+import { indexRoute } from './indexRoutes';
+import { search } from './search';
+import { checkForApiKey } from '../shared/checkForApiKey';
+import mcpRouter from './mcp';
 
-const schema = z.object({
-  source: z.string(),
-  external_id: z.string().optional(),
-  text: z.string({ required_error: "Text field is required" }),
-  metadata: z.record(z.any()).optional(),
-});
+const router = Router();
 
-export const indexRoute = async (req: Request, res: Response) => {
-  const body = req.body;
-  const { error, data, success } = schema.safeParse(body);
+// API Routes
+router.post('/index', checkForApiKey, indexRoute);
+router.post('/search', checkForApiKey, search);
 
-  if (!success) {
-    return res.status(400).json({
-      error: "Validation failed",
-      issues: error.issues,
-    });
-  }
+// MCP Routes
+router.use('/mcp', mcpRouter);
 
-  if (data?.metadata) {
-    const metadataString = JSON.stringify(data.metadata);
-    if (new TextEncoder().encode(metadataString).length > 100 * 1024) {
-      return res.status(413).json({ error: "Metadata exceeds 100KB limit" });
-    }
-  }
-
-  //todo later get this from the user table or force ollama if running locally
-  const embeddings = await generate(data.text, {
-    apiKey: process.env.AI_API_KEY as string,
-    baseURL: process.env.AI_BASE_URL,
-  });
-
-  if (!embeddings) {
-    return res.status(500).json({ error: "Failed to generate embeddings" });
-  }
-
-  await indexDocument({ ...data, embeddings });
-
-  res.set(headers);
-  res.json({
-    message: "Data received and validated",
-    data,
-    embeddings,
-  });
-};
+export default router;

@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { generate } from "../embed-generation/generate";
-import { corsHeaders as headers } from "../shared/corsHeaders";
 import { sql } from "bun";
 import { searchDocuments } from "../database/searchDocuments";
 import { Request, Response } from "express";
@@ -31,7 +30,6 @@ export const search = async (req: Request, res: Response) => {
 
   const results = await searchDocuments({ embeddings });
 
-  res.set(headers);
   res.json({
     results,
   });

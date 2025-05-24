@@ -1,9 +1,7 @@
 import express from "express";
-import { indexRoute } from "./routes";
+import routes from "./routes";
 import App from "./frontend/public/app.html";
-import { search } from "./routes/search";
-import { checkForApiKey } from "./shared/checkForApiKey";
-import mcpRouter from "./routes/mcp";
+import { corsMiddleware } from "./shared/corsMiddleware";
 
 // Create Express application
 const app = express();
@@ -11,24 +9,10 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use(corsMiddleware);
 
-// Apply CORS headers for all responses
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    res.set({
-      "Access-Control-Allow-Origin": "app://obsidian.md",
-      "Access-Control-Allow-Methods": "POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type,Authorization"
-    });
-    return res.status(200).end();
-  }
-  next();
-});
-
-// Routes
-app.post("/index", checkForApiKey, indexRoute);
-app.post("/search", checkForApiKey, search);
-app.use("/mcp", mcpRouter);
+// API Routes
+app.use('/', routes);
 
 // Frontend routes
 app.get("/app/*", (_, res) => {
