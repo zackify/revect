@@ -2,6 +2,7 @@ import { z } from "zod";
 import { generate } from "../embed-generation/generate";
 import { indexDocument } from "../database/indexDocument";
 import { corsHeaders as headers } from "../shared/corsHeaders";
+import { Request, Response } from "express";
 
 const schema = z.object({
   source: z.string(),
@@ -10,33 +11,21 @@ const schema = z.object({
   metadata: z.record(z.any()).optional(),
 });
 
-export const indexRoute = async (request: Request) => {
-  const body = await request.json();
+export const indexRoute = async (req: Request, res: Response) => {
+  const body = req.body;
   const { error, data, success } = schema.safeParse(body);
 
   if (!success) {
-    return Response.json(
-      {
-        error: "Validation failed",
-        issues: error.issues,
-      },
-      {
-        status: 400,
-        headers,
-      }
-    );
+    return res.status(400).json({
+      error: "Validation failed",
+      issues: error.issues,
+    });
   }
 
   if (data?.metadata) {
     const metadataString = JSON.stringify(data.metadata);
     if (new TextEncoder().encode(metadataString).length > 100 * 1024) {
-      return Response.json(
-        { error: "Metadata exceeds 100KB limit" },
-        {
-          status: 413,
-          headers,
-        } // Payload Too Large
-      );
+      return res.status(413).json({ error: "Metadata exceeds 100KB limit" });
     }
   }
 
@@ -47,23 +36,15 @@ export const indexRoute = async (request: Request) => {
   });
 
   if (!embeddings) {
-    return Response.json(
-      { error: "Failed to generate embeddings" },
-      {
-        status: 500,
-        headers,
-      }
-    );
+    return res.status(500).json({ error: "Failed to generate embeddings" });
   }
 
   await indexDocument({ ...data, embeddings });
 
-  return Response.json(
-    {
-      message: "Data received and validated",
-      data,
-      embeddings,
-    },
-    { headers }
-  );
+  res.set(headers);
+  res.json({
+    message: "Data received and validated",
+    data,
+    embeddings,
+  });
 };
