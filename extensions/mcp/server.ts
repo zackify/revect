@@ -4,6 +4,10 @@ import {
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import app from "../../src/server"; // Import the Express app
+import { indexHandler } from "../../src/routes";
+import { searchHandler } from "../../src/routes/search";
+import { expressSendAdapter } from "../../src/shared/adapters";
 
 // Create an MCP server
 const server = new McpServer({
@@ -18,17 +22,14 @@ server.tool(
   { text: z.string() },
   async ({ text }) => {
     try {
-      //TODO make dynamic
-      const response = await fetch(`${process.env.API_URL}/search`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          //TODO make dynamic
-          Authorization: process.env.API_SECRET as string,
-        },
-        body: JSON.stringify({ text }),
+      // Using the handler directly instead of making a fetch request
+      const results: any[] = [];
+      
+      await searchHandler({ text }, ({ body }) => {
+        if (body.results) {
+          results.push(...body.results);
+        }
       });
-      const { results } = (await response.json()) as { results: any[] };
 
       return {
         content: [
@@ -66,23 +67,20 @@ server.tool(
   { text: z.string() },
   async ({ text }) => {
     try {
-      //TODO make dynamic
-      const response = await fetch(`${process.env.API_URL}/index`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          //TODO make dynamic
-          Authorization: process.env.API_SECRET as string,
-        },
-        body: JSON.stringify({ text, source: "mcp" }),
+      // Using the handler directly instead of making a fetch request
+      let message = "";
+      
+      await indexHandler({ text, source: "mcp" }, ({ body }) => {
+        if (body.message) {
+          message = body.message;
+        }
       });
-      const { message } = (await response.json()) as { message: string };
 
       return {
         content: [
           {
             type: "text",
-            text: message,
+            text: message || "Successfully indexed content",
           },
         ],
       };
