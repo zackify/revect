@@ -16,7 +16,9 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@types/express": "^5.0.2",
     "bun-plugin-tailwind": "^0.0.15",
+    "express": "^5.1.0",
     "openai": "^4.97.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
