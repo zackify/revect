@@ -5,12 +5,24 @@ import App from "./frontend/public/app.html";
 import { search, searchHandler } from "./routes/search";
 import { checkForApiKey, checkForApiKeyExpress } from "./shared/checkForApiKey";
 import { expressSendAdapter } from "./shared/adapters";
+import { corsHeaders } from "./shared/corsHeaders";
 
 // Create an Express server
 const app = express();
 
 // Middleware
 app.use(express.json());
+
+// CORS middleware for Express
+app.use((req, res, next) => {
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
 
 // Routes
 app.post("/index", checkForApiKeyExpress, async (req, res) => {
@@ -19,6 +31,15 @@ app.post("/index", checkForApiKeyExpress, async (req, res) => {
 
 app.post("/search", checkForApiKeyExpress, async (req, res) => {
   await searchHandler(req.body, expressSendAdapter(res));
+});
+
+// Frontend routes
+app.get("/app", (req, res) => {
+  res.type("text/html").send(App);
+});
+
+app.get("/app/*", (req, res) => {
+  res.type("text/html").send(App);
 });
 
 // Error handler for Express

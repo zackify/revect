@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "bun run --watch src/server.ts",
-    "start": "bun run ./src/database/migrations.ts up && bun run src/server.ts"
+    "dev:express": "USE_EXPRESS=true bun run --watch src/server.ts",
+    "start": "bun run ./src/database/migrations.ts up && bun run src/server.ts",
+    "start:express": "USE_EXPRESS=true bun run ./src/database/migrations.ts up && bun run src/server.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
