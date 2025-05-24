@@ -1,28 +1,34 @@
 import { z } from "zod";
 import { generate } from "../embed-generation/generate";
 import { corsHeaders as headers } from "../shared/corsHeaders";
-import { sql } from "bun";
 import { searchDocuments } from "../database/searchDocuments";
+import { SendFn } from "../shared/types";
 
 const schema = z.object({
   text: z.string({ required_error: "search text is required" }),
 });
 
+// Original function that accepts a Request object
 export const search = async (request: Request) => {
-  const body = await request.json();
+  return searchHandler(
+    await request.json(),
+    (response) => Response.json(response.body, { status: response.status, headers: response.headers || headers })
+  );
+};
+
+// Abstracted function that accepts a send function
+export const searchHandler = async (body: any, send: SendFn) => {
   const { error, data, success } = schema.safeParse(body);
 
   if (!success) {
-    return Response.json(
-      {
+    return send({
+      status: 400,
+      body: {
         error: "Validation failed",
         issues: error.issues,
       },
-      {
-        status: 400,
-        headers,
-      }
-    );
+      headers
+    });
   }
 
   const embeddings = await generate(data.text, {
@@ -31,21 +37,18 @@ export const search = async (request: Request) => {
   });
 
   if (!embeddings) {
-    return Response.json(
-      { error: "Failed to generate embeddings" },
-      {
-        status: 500,
-        headers,
-      }
-    );
+    return send({
+      status: 500,
+      body: { error: "Failed to generate embeddings" },
+      headers
+    });
   }
 
   const results = await searchDocuments({ embeddings });
 
-  return Response.json(
-    {
-      results,
-    },
-    { headers }
-  );
+  return send({
+    status: 200,
+    body: { results },
+    headers
+  });
 };
