@@ -13,7 +13,7 @@ import * as sqliteVec from "sqlite-vec";
 import { createDocumentsTableSQL, createDocumentChunksTableSQL } from "../src/database/migrations";
 
 // Set test environment variables
-process.env.DATABASE_PATH = "******"; // In-memory database for tests
+process.env.DATABASE_PATH = ":memory:"; // In-memory database for tests
 process.env.AI_API_KEY = "test-key";
 process.env.AI_EMBEDDING_MODEL = "test-model";
 
@@ -35,7 +35,7 @@ describe("Index Route", () => {
 
   beforeAll(async () => {
     // Create fresh database
-    db = new Database("******");
+    db = new Database(":memory:");
     
     // Configure database
     db.exec("PRAGMA journal_mode = WAL;");

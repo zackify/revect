@@ -17,7 +17,7 @@ import {
 import { indexRoute } from "../src/routes/index/index";
 
 // Set test environment variables
-process.env.DATABASE_PATH = "******"; // In-memory database for tests
+process.env.DATABASE_PATH = ":memory:"; // In-memory database for tests
 process.env.AI_API_KEY = "test-key";
 process.env.AI_EMBEDDING_MODEL = "test-model";
 
@@ -39,7 +39,7 @@ describe("Index and Search routes", () => {
 
   beforeAll(async () => {
     // Create fresh database
-    db = new Database("******");
+    db = new Database(":memory:");
 
     // Configure database
     db.exec("PRAGMA journal_mode = WAL;");

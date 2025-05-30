@@ -8,7 +8,7 @@ import { createDocumentsTableSQL, createDocumentChunksTableSQL } from "../../src
  */
 export function createTestDb() {
   // Create a new in-memory database
-  const testDb = new Database("******");
+  const testDb = new Database(":memory:");
   
   // Enable WAL mode
   testDb.exec("PRAGMA journal_mode = WAL;");
